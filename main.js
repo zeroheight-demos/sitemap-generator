@@ -1,5 +1,3 @@
-// node main.js --key zhat_VuWPCQcW78XRw4ufLt3FTdJ8AIyGz5ff-q6jGLcG --client zhci_5rSLVtpSHA28sk9Li2TpGRIVtSejhfIIRbRBkBgC --styleguide 114183
-
 const fs = require("node:fs");
 
 const getOption = (flag) => {
@@ -36,7 +34,6 @@ const fetchSinglePage = async (page) => {
   const data = await fetchData(
     `https://zeroheight.com/open_api/v2/pages/${page.id}`
   );
-  console.log(data.page.tabs);
   return data;
 };
 
@@ -49,7 +46,7 @@ const template = (page) => {
   `;
 };
 
-const buildSitemap = async () => {
+const buildSitemap = async (directory) => {
   const content = await fetchPages().then((data) => {
     return Promise.all(data.pages.map((page) => fetchSinglePage(page))).then(
       (pages) => pages.map(({ page }) => template(page))
@@ -62,7 +59,11 @@ const buildSitemap = async () => {
 </urlset>
     `;
 
-  fs.writeFileSync("./build/sitemap.xml", sitemap);
+  if (!fs.existsSync(directory)) {
+    await fs.mkdirSync(directory);
+  }
+
+  fs.writeFileSync(`${directory}/sitemap.xml`, sitemap);
 };
 
-buildSitemap();
+buildSitemap("./build/");
