@@ -62,7 +62,7 @@ const buildSitemap = async () => {
 </urlset>
     `;
 
-  fs.writeFileSync("./sitemap.xml", sitemap);
+  fs.writeFileSync("./build/sitemap.xml", sitemap);
 };
 
 buildSitemap();
