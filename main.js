@@ -1,3 +1,5 @@
+// node main.js --key zhat_VuWPCQcW78XRw4ufLt3FTdJ8AIyGz5ff-q6jGLcG --client zhci_5rSLVtpSHA28sk9Li2TpGRIVtSejhfIIRbRBkBgC --styleguide 114183
+
 const fs = require("node:fs");
 
 const getOption = (flag) => {
@@ -41,7 +43,7 @@ const template = (page) => {
   return `
 <url>
   <loc>${page.url}</loc>
-  <lastmod>${page.updated_at}</lastmod>
+  <lastmod>${page.updated_at.slice(0, 10)}</lastmod>
 </url>
   `;
 };
@@ -54,10 +56,11 @@ const buildSitemap = async (directory) => {
   });
 
   const sitemap = `
-<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${content.join("")}
 </urlset>
-    `;
+    `.trim();
 
   if (!fs.existsSync(directory)) {
     await fs.mkdirSync(directory);
