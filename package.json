@@ -1,0 +1,23 @@
+{
+  "name": "sitemap-generator",
+  "version": "1.0.0",
+  "description": "Generate full sitemaps for your design system using the zeroheight API",
+  "main": "main.js",
+  "scripts": {
+    "test": "node main.js --key zhat_VuWPCQcW78XRw4ufLt3FTdJ8AIyGz5ff-q6jGLcG --client zhci_5rSLVtpSHA28sk9Li2TpGRIVtSejhfIIRbRBkBgC --styleguide 114183"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeroheight-demos/sitemap-generator.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zeroheight-demos/sitemap-generator/issues"
+  },
+  "author": {
+    "name": "zeroheight",
+    "email": "community@zeroheight.com",
+    "url": "https://zeroheight.com/"
+  },
+  "homepage": "https://github.com/zeroheight-demos/sitemap-generator#readme"
+}
