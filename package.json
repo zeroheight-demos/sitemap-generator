@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "node main.js --path ./test/",
-    "build": "node main.js --path ./build/"
+    "build": "node main.js"
   },
   "repository": {
     "type": "git",
