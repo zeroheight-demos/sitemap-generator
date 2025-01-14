@@ -3,7 +3,8 @@ dotenv.config();
 
 const fs = require("node:fs");
 
-const { env } = process;
+const { KEY, CLIENT, STYLEGUIDE, STYLEGUIDE_TITLE, STYLEGUIDE_URL } =
+  process.env;
 
 const getOption = (flag) => {
   // Check if an option has been passed in
@@ -13,18 +14,14 @@ const getOption = (flag) => {
   return false;
 };
 
-const key = getOption("--key") || env.KEY;
-const client = getOption("--client") || env.CLIENT;
-const styleguide = getOption("--styleguide") || env.STYLEGUIDE;
-const title = getOption("--title") || env.STYLEGUIDE_TITLE;
-const url = getOption("--url") || env.STYLEGUIDE_URL;
+const path = getOption("--path") || "./build/";
 
 const fetchData = (endpoint) => {
   return fetch(endpoint, {
     method: "GET",
     headers: {
-      "X-API-KEY": key,
-      "X-API-CLIENT": client,
+      "X-API-KEY": KEY,
+      "X-API-CLIENT": CLIENT,
     },
   })
     .then((res) => res.json())
@@ -33,7 +30,7 @@ const fetchData = (endpoint) => {
 
 const fetchPages = () => {
   return fetchData(
-    `https://zeroheight.com/open_api/v2/pages/?styleguide_id=${styleguide}`
+    `https://zeroheight.com/open_api/v2/pages/?styleguide_id=${STYLEGUIDE}`
   );
 };
 
@@ -46,7 +43,7 @@ const fetchSinglePage = async (page) => {
 
 const fetchReleases = () => {
   return fetchData(
-    `https://zeroheight.com/open_api/v2/styleguides/${styleguide}/versions`
+    `https://zeroheight.com/open_api/v2/styleguides/${STYLEGUIDE}/versions`
   );
 };
 
@@ -87,8 +84,8 @@ const rssTemplate = (content) => {
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>${title || ""}</title>
-    <link>${url || ""}</link>
+    <title>${STYLEGUIDE_TITLE || ""}</title>
+    <link>${STYLEGUIDE_URL || ""}</link>
     ${content.join("")}
   </channel>
 </rss>
@@ -124,4 +121,4 @@ const build = async (directory) => {
   }
 };
 
-build("./build/");
+build(path);
