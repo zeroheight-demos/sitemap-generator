@@ -16,8 +16,8 @@ const getOption = (flag) => {
 const key = getOption("--key") || env.KEY;
 const client = getOption("--client") || env.CLIENT;
 const styleguide = getOption("--styleguide") || env.STYLEGUIDE;
-const title = getOption("--title") || env.TITLE;
-const url = getOption("--url") || env.URL;
+const title = getOption("--title") || env.STYLEGUIDE_TITLE;
+const url = getOption("--url") || env.STYLEGUIDE_URL;
 
 const fetchData = (endpoint) => {
   return fetch(endpoint, {
