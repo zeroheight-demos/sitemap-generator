@@ -19,5 +19,8 @@
     "email": "community@zeroheight.com",
     "url": "https://zeroheight.com/"
   },
-  "homepage": "https://github.com/zeroheight-demos/sitemap-generator#readme"
+  "homepage": "https://github.com/zeroheight-demos/sitemap-generator#readme",
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
 }

@@ -1,6 +1,9 @@
-// node main.js --key zhat_VuWPCQcW78XRw4ufLt3FTdJ8AIyGz5ff-q6jGLcG --client zhci_5rSLVtpSHA28sk9Li2TpGRIVtSejhfIIRbRBkBgC --styleguide 114183
+const dotenv = require("dotenv");
+dotenv.config();
 
 const fs = require("node:fs");
+
+const { env } = process;
 
 const getOption = (flag) => {
   // Check if an option has been passed in
@@ -10,9 +13,11 @@ const getOption = (flag) => {
   return false;
 };
 
-const key = getOption("--key");
-const client = getOption("--client");
-const styleguide = getOption("--styleguide");
+const key = getOption("--key") || env.KEY;
+const client = getOption("--client") || env.CLIENT;
+const styleguide = getOption("--styleguide") || env.STYLEGUIDE;
+const title = getOption("--title") || env.TITLE;
+const url = getOption("--url") || env.URL;
 
 const fetchData = (endpoint) => {
   return fetch(endpoint, {
@@ -39,7 +44,13 @@ const fetchSinglePage = async (page) => {
   return data;
 };
 
-const template = (page) => {
+const fetchReleases = () => {
+  return fetchData(
+    `https://zeroheight.com/open_api/v2/styleguides/${styleguide}/versions`
+  );
+};
+
+const sitemapPartial = (page) => {
   return `
 <url>
   <loc>${page.url}</loc>
@@ -48,25 +59,67 @@ const template = (page) => {
   `;
 };
 
-const buildSitemap = async (directory) => {
-  const content = await fetchPages().then((data) => {
-    return Promise.all(data.pages.map((page) => fetchSinglePage(page))).then(
-      (pages) => pages.map(({ page }) => template(page))
-    );
-  });
+const rssPartial = (version) => {
+  return `
+<item>
+  <title>${version.name}</title>
+  <link>${version.release_url}</link>
+  <guid>${version.id}</guid>
+  <pubDate>${version.created_at}</pubDate>
+  <description>${version.release_notes || ""}</description>
+</item>
+  `;
+};
 
-  const sitemap = `
+const sitemapTemplate = (content) => {
+  return `
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${content.join("")}
 </urlset>
     `.trim();
+};
+
+const rssTemplate = (content) => {
+  return `
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>${title || ""}</title>
+    <link>${url || ""}</link>
+    ${content.join("")}
+  </channel>
+</rss>
+      `.trim();
+};
+
+const buildSitemap = async (directory) => {
+  const sitemapContent = await fetchPages().then((data) => {
+    return Promise.all(data.pages.map((page) => fetchSinglePage(page))).then(
+      (pages) => pages.map(({ page }) => sitemapPartial(page))
+    );
+  });
+
+  const rssContent = await fetchReleases().then((data) => {
+    return data.versions.map((version) => rssPartial(version));
+  });
+
+  const sitemap = sitemapTemplate(sitemapContent);
+  const rss = rssTemplate(rssContent);
 
   if (!fs.existsSync(directory)) {
     await fs.mkdirSync(directory);
   }
 
-  fs.writeFileSync(`${directory}/sitemap.xml`, sitemap);
+  try {
+    fs.writeFileSync(`${directory}/sitemap.xml`, sitemap);
+    fs.writeFileSync(`${directory}/rss.xml`, rss);
+    console.log(`Sitemap and RSS feed written to ${directory}`);
+  } catch (error) {
+    console.log(
+      `${error}, unable to write sitemap and RSS feed written to ${directory}`
+    );
+  }
 };
 
 buildSitemap("./build/");
