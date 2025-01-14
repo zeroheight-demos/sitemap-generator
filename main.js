@@ -64,9 +64,9 @@ const rssPartial = (version) => {
 <item>
   <title>${version.name}</title>
   <link>${version.release_url}</link>
-  <guid>${version.id}</guid>
-  <pubDate>${version.created_at}</pubDate>
-  <content:encoded><![CDATA[${version.release_notes || ""}]]</content:encoded>
+  <guid>${version.release_url}</guid>
+  <pubDate>${new Date(version.created_at).toUTCString()}</pubDate>
+  <content:encoded><![CDATA[${version.release_notes || ""}]]></content:encoded>
 </item>
   `;
 };
