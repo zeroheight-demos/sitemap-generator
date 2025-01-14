@@ -85,7 +85,7 @@ const sitemapTemplate = (content) => {
 const rssTemplate = (content) => {
   return `
 <?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${title || ""}</title>
     <link>${url || ""}</link>
@@ -95,7 +95,7 @@ const rssTemplate = (content) => {
       `.trim();
 };
 
-const buildSitemap = async (directory) => {
+const build = async (directory) => {
   const sitemapContent = await fetchPages().then((data) => {
     return Promise.all(data.pages.map((page) => fetchSinglePage(page))).then(
       (pages) => pages.map(({ page }) => sitemapPartial(page))
@@ -124,4 +124,4 @@ const buildSitemap = async (directory) => {
   }
 };
 
-buildSitemap("./build/");
+build("./build/");
