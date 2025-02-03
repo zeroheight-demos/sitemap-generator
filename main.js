@@ -7,7 +7,6 @@ const { KEY, CLIENT, STYLEGUIDE, STYLEGUIDE_TITLE, STYLEGUIDE_URL } =
   process.env;
 
 const getOption = (flag) => {
-  // Check if an option has been passed in
   if (process.argv.indexOf(flag) != -1) {
     return process.argv[process.argv.indexOf(flag) + 1];
   }
@@ -47,13 +46,21 @@ const fetchReleases = () => {
   );
 };
 
-const sitemapPartial = (page) => {
+const sitemapPagePartial = ({ url, updated_at }) => {
   return `
 <url>
-  <loc>${page.url}</loc>
-  <lastmod>${page.updated_at.slice(0, 10)}</lastmod>
+  <loc>${url}</loc>
+  <lastmod>${updated_at.slice(0, 10)}</lastmod>
 </url>
   `;
+};
+
+const sitemapTabsPartial = (page) => {
+  return page.tabs
+    .filter((tab) => tab.order !== 1)
+    .map((tab) =>
+      sitemapPagePartial({ url: tab.url, updated_at: page.updated_at })
+    );
 };
 
 const rssPartial = (version) => {
@@ -95,7 +102,15 @@ const rssTemplate = (content) => {
 const build = async (directory) => {
   const sitemapContent = await fetchPages().then((data) => {
     return Promise.all(data.pages.map((page) => fetchSinglePage(page))).then(
-      (pages) => pages.map(({ page }) => sitemapPartial(page))
+      (pages) =>
+        pages.map(({ page }) => {
+          let contentPartial = sitemapPagePartial(page);
+          if (page.tabs) {
+            contentPartial = contentPartial + sitemapTabsPartial(page);
+          }
+          console.log(contentPartial);
+          return contentPartial;
+        })
     );
   });
 
