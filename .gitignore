@@ -1,5 +1,4 @@
 .env
-build/*
-!build/index.html
+build/
 node_modules/
 package-lock.json
