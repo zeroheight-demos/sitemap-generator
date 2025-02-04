@@ -99,6 +99,31 @@ const rssTemplate = (content) => {
       `.trim();
 };
 
+const indexTemplate = () => {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>zeroheight Styleguide Sitemap &amp; RSS Feed</title>
+      </head>
+      <body>
+        <h1>zeroheight Styleguide Sitemap &amp; RSS Feed</h1>
+        <ul>
+          <li>
+            <a href="./sitemap.xml">Sitemap example</a> |
+            <a href="./sitemap.xml" download>Download</a>
+          </li>
+          <li>
+            <a href="./rss.xml">RSS feed example</a> |
+            <a href="./rss.xml" download>Download</a>
+          </li>
+          <li><a href="${STYLEGUIDE_URL || ""}">Original styleguide</a></li>
+        </ul>
+      </body>
+    </html>
+  `;
+};
+
 const build = async (directory) => {
   const sitemapContent = await fetchPages().then((data) => {
     return Promise.all(data.pages.map((page) => fetchSinglePage(page))).then(
@@ -108,7 +133,6 @@ const build = async (directory) => {
           if (page.tabs) {
             contentPartial = contentPartial + sitemapTabsPartial(page);
           }
-          console.log(contentPartial);
           return contentPartial;
         })
     );
@@ -120,6 +144,7 @@ const build = async (directory) => {
 
   const sitemap = sitemapTemplate(sitemapContent);
   const rss = rssTemplate(rssContent);
+  const index = indexTemplate();
 
   if (!fs.existsSync(directory)) {
     await fs.mkdirSync(directory);
@@ -128,6 +153,7 @@ const build = async (directory) => {
   try {
     fs.writeFileSync(`${directory}/sitemap.xml`, sitemap);
     fs.writeFileSync(`${directory}/rss.xml`, rss);
+    fs.writeFileSync(`${directory}/index.html`, index);
     console.log(`Sitemap and RSS feed written to ${directory}`);
   } catch (error) {
     console.log(
