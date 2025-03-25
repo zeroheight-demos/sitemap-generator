@@ -16,6 +16,7 @@ const getOption = (flag) => {
 const path = getOption("--path") || "./build/";
 
 const fetchData = (endpoint) => {
+  console.log(`Fetching data from endpoint: ${endpoint}`);
   return fetch(endpoint, {
     method: "GET",
     headers: {
@@ -24,7 +25,14 @@ const fetchData = (endpoint) => {
     },
   })
     .then((res) => res.json())
-    .then((json) => json.data);
+    .then((json) => {
+      console.log(`Data fetched from endpoint: ${endpoint}`, json);
+      return json.data;
+    })
+    .catch((error) => {
+      console.error(`Error fetching data from endpoint: ${endpoint}`, error);
+      throw error;
+    });
 };
 
 const fetchPages = () => {
@@ -34,9 +42,11 @@ const fetchPages = () => {
 };
 
 const fetchSinglePage = async (page) => {
+  console.log(`Fetching single page: ${page.id}`);
   const data = await fetchData(
     `https://zeroheight.com/open_api/v2/pages/${page.id}`
   );
+  console.log(`Data fetched for single page: ${page.id}`, data);
   return data;
 };
 
@@ -47,6 +57,10 @@ const fetchReleases = () => {
 };
 
 const sitemapPagePartial = ({ url, updated_at }) => {
+  if (!url || !updated_at) {
+    console.error(`Invalid page data: url=${url}, updated_at=${updated_at}`);
+    return '';
+  }
   return `
 <url>
   <loc>${url}</loc>
@@ -125,20 +139,33 @@ const indexTemplate = () => {
 };
 
 const build = async (directory) => {
+  console.log(`Building sitemap and RSS feed in directory: ${directory}`);
   const sitemapContent = await fetchPages().then((data) => {
+    console.log(`Pages fetched:`, data);
     return Promise.all(data.pages.map((page) => fetchSinglePage(page))).then(
-      (pages) =>
-        pages.map(({ page }) => {
+      (pages) => {
+        console.log(`Single pages fetched:`, pages);
+        return pages.map(({ page }) => {
+          if (!page) {
+            console.error(`Page is undefined:`, page);
+            return '';
+          }
           let contentPartial = sitemapPagePartial(page);
           if (page.tabs) {
             contentPartial = contentPartial + sitemapTabsPartial(page);
           }
           return contentPartial;
-        })
+        });
+      }
     );
   });
 
   const rssContent = await fetchReleases().then((data) => {
+    console.log(`Releases fetched:`, data);
+    if (!data || !data.versions) {
+      console.error(`Invalid releases data:`, data);
+      return [];
+    }
     return data.versions.map((version) => rssPartial(version));
   });
 
@@ -147,6 +174,7 @@ const build = async (directory) => {
   const index = indexTemplate();
 
   if (!fs.existsSync(directory)) {
+    console.log(`Directory does not exist, creating: ${directory}`);
     await fs.mkdirSync(directory);
   }
 
@@ -156,8 +184,8 @@ const build = async (directory) => {
     fs.writeFileSync(`${directory}/index.html`, index);
     console.log(`Sitemap and RSS feed written to ${directory}`);
   } catch (error) {
-    console.log(
-      `${error}, unable to write sitemap and RSS feed written to ${directory}`
+    console.error(
+      `${error}, unable to write sitemap and RSS feed to ${directory}`
     );
   }
 };
